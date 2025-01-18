@@ -1,0 +1,69 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llm-playground"
+dynamic = ["version"]
+description = ''
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "ariel", email = "ariel.j.kwiatkowski@gmail.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+    "click>=8.1.8",
+    "rich>=13.9.4",
+    "torch>=2.5.1",
+    "transformers>=4.46.3",
+]
+
+[project.urls]
+Documentation = "https://github.com/ariel/llm-playground#readme"
+Issues = "https://github.com/ariel/llm-playground/issues"
+Source = "https://github.com/ariel/llm-playground"
+
+[project.scripts]
+llm = "llm_playground.cli:main"
+
+[tool.hatch.version]
+path = "llm_playground/__about__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:llm_playground tests}"
+
+[tool.coverage.run]
+source_pkgs = ["llm_playground", "tests"]
+branch = true
+parallel = true
+omit = [
+  "llm_playground/__about__.py",
+]
+
+[tool.coverage.paths]
+llm_playground = ["llm_playground", "*/llm-playground/llm_playground"]
+tests = ["tests", "*/llm-playground/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
