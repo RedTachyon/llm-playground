@@ -27,7 +27,7 @@ class CustomStreamer(TextStreamer):
         self.idx = 0
 
     def put(self, tokens):
-        # print(f"{self.idx} Got value: {token}")
+        # print(f"{self.idx} Got value: {tokens}")
         # self.idx += 1
 
         # print(tokens.shape)
@@ -39,15 +39,15 @@ class CustomStreamer(TextStreamer):
         text = self.tokenizer.decode(tokens[0], skip_special_tokens=True)
         self.collected += text
 
-        if not self.prompt_printed:
-            if "assistant" in self.collected.lower():
-                # Found the start of assistant's response
-                response = self.collected[self.collected.lower().rfind("assistant"):]
-                response = response.split(":", 1)[1].strip() if ":" in response else response
-                console.print(response, end="")
-                self.prompt_printed = True
-        else:
-            console.print(text, end="")
+        # if not self.prompt_printed:
+        #     if "assistant" in self.collected.lower():
+        #         # Found the start of assistant's response
+        #         response = self.collected[self.collected.lower().rfind("assistant"):]
+        #         response = response.split(":", 1)[1].strip() if ":" in response else response
+        #         console.print(response, end="")
+        #         self.prompt_printed = True
+        # else:
+        console.print(text, end="")
 
 
 class LLMInterface:
@@ -55,15 +55,12 @@ class LLMInterface:
         self.device = get_device()
         console.print(f"[bold green]Using device: {self.device}[/bold green]")
 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-        # Load base model
         if checkpoint_path:
-            # Load base model first
-            self.model = AutoModelForCausalLM.from_pretrained(model_name)
-            # Then load custom weights
-            self.model.load_state_dict(torch.load(checkpoint_path))
+            self.tokenizer = AutoTokenizer.from_pretrained(checkpoint_path, local_files_only=True)
+            self.model = AutoModelForCausalLM.from_pretrained(checkpoint_path, local_files_only=True)
         else:
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
             self.model = AutoModelForCausalLM.from_pretrained(model_name)
 
         self.model.eval()
@@ -86,11 +83,12 @@ class LLMInterface:
         inputs = self.tokenizer.apply_chat_template(
             messages,
             return_tensors="pt",
-            return_dict=True
+            return_dict=True,
+            add_generation_prompt=True
         ).to(self.device)
 
         # Generate response with streaming
-        self.model.generate(
+        out = self.model.generate(
             **inputs,
             max_length=200,
             temperature=0.7,
@@ -98,6 +96,8 @@ class LLMInterface:
             streamer=self.streamer
         )
         console.print()  # Add newline after response
+
+        # print(f"{self.tokenizer.decode(out[0])=}")
 
     def interactive_session(self):
         console.print("[bold green]Starting interactive session. Type 'exit' to quit.[/bold green]")
