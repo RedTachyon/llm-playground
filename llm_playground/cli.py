@@ -6,13 +6,13 @@ console = Console()
 
 
 @click.command()
-@click.option('-m', '--model', required=True, help='Model identifier (e.g., meta-llama/Llama-3.2B-3B)')
+@click.option('-m', '--model', default=None, help='Model identifier (e.g., meta-llama/Llama-3.2B-3B)')
 @click.option('-c', '--checkpoint', default=None, help='Path to custom model checkpoint')
 @click.option('-i', '--interactive', is_flag=True, help='Start interactive chat session')
 @click.option('-s', '--system-prompt', default="You are a helpful assistant",
               help='System prompt to use for the chat')
 @click.argument('prompt', required=False)
-def main(model: str, checkpoint: str, interactive: bool, system_prompt: str, prompt: str):
+def main(model: str | None, checkpoint: str | None, interactive: bool, system_prompt: str, prompt: str):
     try:
         # Initialize model
         llm = LLMInterface(model, checkpoint)

@@ -39,29 +39,25 @@ class CustomStreamer(TextStreamer):
         text = self.tokenizer.decode(tokens[0], skip_special_tokens=True)
         self.collected += text
 
-        # if not self.prompt_printed:
-        #     if "assistant" in self.collected.lower():
-        #         # Found the start of assistant's response
-        #         response = self.collected[self.collected.lower().rfind("assistant"):]
-        #         response = response.split(":", 1)[1].strip() if ":" in response else response
-        #         console.print(response, end="")
-        #         self.prompt_printed = True
-        # else:
+
         console.print(text, end="")
 
 
 class LLMInterface:
-    def __init__(self, model_name: str, checkpoint_path: Optional[str] = None):
+    def __init__(self, model_name: str | None, checkpoint_path: str | None):
         self.device = get_device()
         console.print(f"[bold green]Using device: {self.device}[/bold green]")
 
 
-        if checkpoint_path:
-            self.tokenizer = AutoTokenizer.from_pretrained(checkpoint_path, local_files_only=True)
+        if model_name and checkpoint_path:
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
             self.model = AutoModelForCausalLM.from_pretrained(checkpoint_path, local_files_only=True)
-        else:
+        elif model_name:
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
             self.model = AutoModelForCausalLM.from_pretrained(model_name)
+        elif checkpoint_path:
+            self.tokenizer = AutoTokenizer.from_pretrained(checkpoint_path, local_files_only=True)
+            self.model = AutoModelForCausalLM.from_pretrained(checkpoint_path, local_files_only=True)
 
         self.model.eval()
         self.model = self.model.to(self.device)
